@@ -1,0 +1,317 @@
+"use server";
+
+import nodemailer from "nodemailer";
+
+type LeadType = "devis" | "rdv";
+
+type FieldName =
+  | "fullName"
+  | "phone"
+  | "email"
+  | "device"
+  | "issue"
+  | "availability"
+  | "consent";
+
+type FieldErrors = Partial<Record<FieldName, string>>;
+
+export type LeadFormState = {
+  status: "idle" | "error" | "success";
+  message: string;
+  errors?: FieldErrors;
+};
+
+const initialState: LeadFormState = {
+  status: "idle",
+  message: "",
+};
+
+function textField(formData: FormData, key: string) {
+  return String(formData.get(key) ?? "").trim();
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function isValidPhone(value: string) {
+  return /^[+\d][\d\s().-]{7,}$/.test(value);
+}
+
+function validateLeadForm(formData: FormData): FieldErrors {
+  const errors: FieldErrors = {};
+
+  const fullName = textField(formData, "fullName");
+  const phone = textField(formData, "phone");
+  const email = textField(formData, "email");
+  const device = textField(formData, "device");
+  const issue = textField(formData, "issue");
+  const availability = textField(formData, "availability");
+  const consent = textField(formData, "consent");
+  const trap = textField(formData, "company");
+
+  if (trap) {
+    errors.fullName = "Soumission invalide.";
+    return errors;
+  }
+
+  if (fullName.length < 2) {
+    errors.fullName = "Nom requis.";
+  }
+
+  if (!isValidPhone(phone)) {
+    errors.phone = "Telephone invalide.";
+  }
+
+  if (!isValidEmail(email)) {
+    errors.email = "Email invalide.";
+  }
+
+  if (device.length < 2) {
+    errors.device = "Appareil requis.";
+  }
+
+  if (issue.length < 8) {
+    errors.issue = "Detaillez panne (8 caracteres min).";
+  }
+
+  if (availability.length < 5) {
+    errors.availability = "Indiquez disponibilite.";
+  }
+
+  if (consent !== "yes") {
+    errors.consent = "Consentement requis.";
+  }
+
+  return errors;
+}
+
+function mailConfig() {
+  const host = process.env.SMTP_HOST ?? "smtp.gmail.com";
+  const port = Number(process.env.SMTP_PORT ?? "465");
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const secure = (process.env.SMTP_SECURE ?? "true") === "true";
+  const from = process.env.SMTP_FROM ?? user;
+  const to = process.env.LEADS_TO_EMAIL ?? user;
+  const shopPhone = process.env.SHOP_PHONE ?? "06 58 99 34 08";
+  const shopAddress =
+    process.env.SHOP_ADDRESS ?? "229 Av. de l'Europe, 77176 Savigny-le-Temple";
+  const shopHours =
+    process.env.SHOP_HOURS ?? "Lundi-Samedi, 10h-19h";
+
+  if (!user || !pass || !from || !to) {
+    return null;
+  }
+
+  return {
+    host,
+    port,
+    secure,
+    user,
+    pass,
+    from,
+    to,
+    shopPhone,
+    shopAddress,
+    shopHours,
+  };
+}
+
+function customerReplyTemplate(args: {
+  leadType: LeadType;
+  fullName: string;
+  device: string;
+  issue: string;
+  availability: string;
+  shopPhone: string;
+  shopAddress: string;
+  shopHours: string;
+}) {
+  const kindLabel =
+    args.leadType === "devis" ? "demande de devis" : "demande de rendez-vous";
+  const subject =
+    args.leadType === "devis"
+      ? "Phone Life 94 - Confirmation demande de devis"
+      : "Phone Life 94 - Confirmation prise de RDV";
+
+  const text = [
+    `Bonjour ${args.fullName},`,
+    "",
+    `Nous avons bien recu votre ${kindLabel}.`,
+    "Notre equipe vous recontacte rapidement pendant les heures d'ouverture.",
+    "",
+    "Recapitulatif:",
+    `- Appareil: ${args.device}`,
+    `- Disponibilite: ${args.availability}`,
+    `- Panne: ${args.issue}`,
+    "",
+    `Telephone atelier: ${args.shopPhone}`,
+    `Adresse: ${args.shopAddress}`,
+    `Horaires: ${args.shopHours}`,
+    "",
+    "Merci,",
+    "Phone Life 94",
+  ].join("\n");
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1a1a1a;">
+      <h2 style="margin: 0 0 12px;">Bonjour ${escapeHtml(args.fullName)},</h2>
+      <p style="margin: 0 0 12px;">
+        Nous avons bien recu votre ${escapeHtml(kindLabel)}.
+        Notre equipe vous recontacte rapidement pendant les heures d ouverture.
+      </p>
+      <p style="margin: 0 0 8px;"><strong>Recapitulatif</strong></p>
+      <ul style="margin: 0 0 14px 20px; padding: 0;">
+        <li><strong>Appareil:</strong> ${escapeHtml(args.device)}</li>
+        <li><strong>Disponibilite:</strong> ${escapeHtml(args.availability)}</li>
+        <li><strong>Panne:</strong> ${escapeHtml(args.issue).replaceAll("\n", "<br />")}</li>
+      </ul>
+      <p style="margin: 0 0 10px;">
+        <strong>Telephone atelier:</strong> ${escapeHtml(args.shopPhone)}<br />
+        <strong>Adresse:</strong> ${escapeHtml(args.shopAddress)}<br />
+        <strong>Horaires:</strong> ${escapeHtml(args.shopHours)}
+      </p>
+      <p style="margin: 14px 0 0;">Merci,<br />Phone Life 94</p>
+    </div>
+  `;
+
+  return {
+    subject,
+    text,
+    html,
+  };
+}
+
+async function sendLeadEmail(formData: FormData, leadType: LeadType) {
+  const config = mailConfig();
+
+  if (!config) {
+    return {
+      status: "error",
+      message:
+        "Service email indisponible. Configurez SMTP_USER, SMTP_PASS, SMTP_FROM et LEADS_TO_EMAIL.",
+    } as LeadFormState;
+  }
+
+  const errors = validateLeadForm(formData);
+  if (Object.keys(errors).length > 0) {
+    return {
+      status: "error",
+      message: "Champs incomplets ou invalides.",
+      errors,
+    } as LeadFormState;
+  }
+
+  const fullName = textField(formData, "fullName");
+  const phone = textField(formData, "phone");
+  const email = textField(formData, "email");
+  const device = textField(formData, "device");
+  const issue = textField(formData, "issue");
+  const availability = textField(formData, "availability");
+
+  const kindLabel = leadType === "devis" ? "Demande de devis" : "Prise de RDV";
+
+  const transporter = nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    auth: {
+      user: config.user,
+      pass: config.pass,
+    },
+  });
+
+  const subject = `[Phone Life 94] ${kindLabel} - ${fullName}`;
+
+  const text = [
+    `Type: ${kindLabel}`,
+    `Nom: ${fullName}`,
+    `Telephone: ${phone}`,
+    `Email: ${email}`,
+    `Appareil: ${device}`,
+    `Disponibilite: ${availability}`,
+    `Probleme: ${issue}`,
+  ].join("\n");
+
+  const html = `
+    <h2>${escapeHtml(kindLabel)}</h2>
+    <p><strong>Nom:</strong> ${escapeHtml(fullName)}</p>
+    <p><strong>Telephone:</strong> ${escapeHtml(phone)}</p>
+    <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+    <p><strong>Appareil:</strong> ${escapeHtml(device)}</p>
+    <p><strong>Disponibilite:</strong> ${escapeHtml(availability)}</p>
+    <p><strong>Probleme:</strong></p>
+    <p>${escapeHtml(issue).replaceAll("\n", "<br />")}</p>
+  `;
+
+  const customerReply = customerReplyTemplate({
+    leadType,
+    fullName,
+    device,
+    issue,
+    availability,
+    shopPhone: config.shopPhone,
+    shopAddress: config.shopAddress,
+    shopHours: config.shopHours,
+  });
+
+  try {
+    await transporter.sendMail({
+      from: config.from,
+      to: config.to,
+      subject,
+      text,
+      html,
+      replyTo: email,
+    });
+
+    try {
+      await transporter.sendMail({
+        from: config.from,
+        to: email,
+        subject: customerReply.subject,
+        text: customerReply.text,
+        html: customerReply.html,
+        replyTo: config.to,
+      });
+    } catch {
+      
+    }
+
+    return {
+      status: "success",
+      message: "Message envoye. Reponse rapide de notre equipe.",
+    } as LeadFormState;
+  } catch {
+    return {
+      status: "error",
+      message: "Echec envoi email. Verifiez configuration SMTP Gmail.",
+    } as LeadFormState;
+  }
+}
+
+export async function sendQuoteRequest(
+  prevState: LeadFormState = initialState,
+  formData: FormData
+) {
+  void prevState;
+  return sendLeadEmail(formData, "devis");
+}
+
+export async function sendAppointmentRequest(
+  prevState: LeadFormState = initialState,
+  formData: FormData
+) {
+  void prevState;
+  return sendLeadEmail(formData, "rdv");
+}
