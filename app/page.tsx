@@ -59,7 +59,13 @@ const localBusinessStructuredData = {
         addressLocality: "Fresnes",
         addressCountry: "FR",
       },
-      areaServed: ["Fresnes", "Cachan", "Chevilly-Larue", "Antony", "L'Hay-les-Roses"],
+      areaServed: [
+        "Fresnes",
+        "Cachan",
+        "Chevilly-Larue",
+        "Antony",
+        "L'Hay-les-Roses",
+      ],
       openingHoursSpecification: [
         {
           "@type": "OpeningHoursSpecification",
@@ -165,7 +171,8 @@ const commitments = [
   },
   {
     title: "Atelier local",
-    detail: "Fresnes 94260. Sans rendez-vous du lundi au samedi, 10h-19h.",
+    detail:
+      "Fresnes 94260 et Savigny-le-Temple. Sans rendez-vous du lundi au samedi, 10h-19h.",
     icon: MapPin,
   },
   {
@@ -182,27 +189,43 @@ const processSteps = [
   "Tests finaux + conseils de protection",
 ] as const;
 
-const fade = (delay: string): CSSProperties => ({
-  "--reveal-delay": delay,
-}) as CSSProperties;
+const fade = (delay: string): CSSProperties =>
+  ({
+    "--reveal-delay": delay,
+  }) as CSSProperties;
 
 export default function Home() {
   return (
     <div className="relative isolate min-h-screen overflow-x-clip pb-20">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessStructuredData) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(localBusinessStructuredData),
+        }}
       />
-      <div className="pointer-events-none absolute inset-0 atelier-grid" aria-hidden />
-      <div className="pointer-events-none absolute inset-0 noise-mask" aria-hidden />
+      <div
+        className="pointer-events-none absolute inset-0 atelier-grid"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 noise-mask"
+        aria-hidden
+      />
 
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 pt-6 md:px-8 md:pt-10">
-        <a className="reveal-up inline-flex items-center gap-2" href="#top" style={fade("40ms")}>
+        <a
+          className="reveal-up inline-flex items-center gap-2"
+          href="#top"
+          style={fade("40ms")}
+        >
           <span className="font-display text-4xl leading-none tracking-[0.06em] text-foreground md:text-5xl">
             PHONE LIFE
           </span>
         </a>
-        <div className="reveal-up flex items-center gap-2" style={fade("120ms")}>
+        <div
+          className="reveal-up flex items-center gap-2"
+          style={fade("120ms")}
+        >
           <a
             className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-background/85 px-4 py-2 text-sm font-semibold backdrop-blur-sm transition-colors hover:border-brand/50 hover:text-brand"
             href="tel:0658993408"
@@ -221,7 +244,10 @@ export default function Home() {
       </header>
 
       <main className="page-shell mx-auto flex w-full max-w-6xl flex-col gap-10 px-5 pt-10 md:gap-16 md:px-8 md:pt-14">
-        <section id="top" className="grid items-end gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-12">
+        <section
+          id="top"
+          className="grid items-end gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-12"
+        >
           <div className="reveal-up flex flex-col gap-8" style={fade("180ms")}>
             <h1 className="text-balance font-display text-6xl leading-[0.88] tracking-[0.02em] text-foreground sm:text-7xl md:text-8xl lg:text-[7rem]">
               Reparation
@@ -231,8 +257,8 @@ export default function Home() {
               ultra-rapide
             </h1>
             <p className="max-w-xl text-base leading-7 text-muted-foreground md:text-lg md:leading-8">
-              Atelier technique hautement calibre pour telephone, tablette et PC. Diagnostic
-              transparent, intervention propre, resultat durable.
+              Atelier technique hautement calibre pour telephone, tablette et
+              PC. Diagnostic transparent, intervention propre, resultat durable.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <a
@@ -251,15 +277,25 @@ export default function Home() {
             </div>
           </div>
 
-          <aside className="reveal-up signal-card scanline relative overflow-hidden rounded-3xl p-6 md:p-8" style={fade("260ms")}>
-            <div className="absolute -right-14 -top-14 h-44 w-44 rounded-full bg-brand/20 blur-3xl" aria-hidden />
+          <aside
+            className="reveal-up signal-card scanline relative overflow-hidden rounded-3xl p-6 md:p-8"
+            style={fade("260ms")}
+          >
+            <div
+              className="absolute -right-14 -top-14 h-44 w-44 rounded-full bg-brand/20 blur-3xl"
+              aria-hidden
+            />
             <div className="relative z-10 flex flex-col gap-7">
               <div className="space-y-2">
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Delai moyen atelier
                 </p>
-                <p className="font-display text-8xl leading-none text-foreground">20</p>
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand">minutes</p>
+                <p className="font-display text-8xl leading-none text-foreground">
+                  20
+                </p>
+                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brand">
+                  minutes
+                </p>
               </div>
               <div className="h-px w-full bg-gradient-to-r from-brand/0 via-brand/65 to-brand/0" />
               <ul className="grid gap-3 text-sm text-muted-foreground">
@@ -280,7 +316,10 @@ export default function Home() {
           </aside>
         </section>
 
-        <section className="reveal-up grid gap-4 sm:grid-cols-2 lg:grid-cols-4" style={fade("340ms")}>
+        <section
+          className="reveal-up grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          style={fade("340ms")}
+        >
           {[
             { label: "Interventions express", value: "20 min" },
             { label: "Satisfaction client", value: "98%" },
@@ -291,7 +330,9 @@ export default function Home() {
               key={stat.label}
               className="rounded-2xl border border-foreground/12 bg-background/85 px-5 py-5 backdrop-blur-sm"
             >
-              <p className="font-display text-5xl leading-none text-foreground">{stat.value}</p>
+              <p className="font-display text-5xl leading-none text-foreground">
+                {stat.value}
+              </p>
               <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 {stat.label}
               </p>
@@ -300,7 +341,10 @@ export default function Home() {
         </section>
 
         <section id="services" className="space-y-6">
-          <div className="reveal-up flex flex-wrap items-end justify-between gap-4" style={fade("420ms")}>
+          <div
+            className="reveal-up flex flex-wrap items-end justify-between gap-4"
+            style={fade("420ms")}
+          >
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">
                 Atelier multi-appareils
@@ -312,8 +356,8 @@ export default function Home() {
               </h2>
             </div>
             <p className="max-w-md text-sm leading-7 text-muted-foreground md:text-base">
-              Chaque intervention suit protocole atelier: verification complete avant,
-              remplacement precision, batterie de tests apres.
+              Chaque intervention suit protocole atelier: verification complete
+              avant, remplacement precision, batterie de tests apres.
             </p>
           </div>
 
@@ -335,8 +379,12 @@ export default function Home() {
                       {service.time}
                     </span>
                   </div>
-                  <h3 className="text-lg font-semibold text-foreground">{service.title}</h3>
-                  <p className="mt-2 text-sm leading-7 text-muted-foreground">{service.description}</p>
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {service.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                    {service.description}
+                  </p>
                 </article>
               );
             })}
@@ -344,14 +392,20 @@ export default function Home() {
         </section>
 
         <section className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
-          <article className="reveal-up signal-card rounded-3xl border border-foreground/10 bg-background/88 p-6 md:p-8" style={fade("840ms")}>
+          <article
+            className="reveal-up signal-card rounded-3xl border border-foreground/10 bg-background/88 p-6 md:p-8"
+            style={fade("840ms")}
+          >
             <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/35 bg-brand/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-brand">
               <Clock3 className="size-4" />
               Process atelier
             </div>
             <ol className="space-y-4">
               {processSteps.map((step, index) => (
-                <li key={step} className="flex items-start gap-3 text-sm leading-7 text-muted-foreground">
+                <li
+                  key={step}
+                  className="flex items-start gap-3 text-sm leading-7 text-muted-foreground"
+                >
                   <span className="mt-1 inline-flex size-6 shrink-0 items-center justify-center rounded-full border border-foreground/20 text-xs font-semibold text-foreground">
                     {index + 1}
                   </span>
@@ -361,17 +415,25 @@ export default function Home() {
             </ol>
           </article>
 
-          <article className="reveal-up grid gap-4 rounded-3xl border border-foreground/10 bg-card/82 p-6 md:grid-cols-2 md:p-8" style={fade("920ms")}>
+          <article
+            className="reveal-up grid gap-4 rounded-3xl border border-foreground/10 bg-card/82 p-6 md:grid-cols-2 md:p-8"
+            style={fade("920ms")}
+          >
             {commitments.map((item) => {
               const Icon = item.icon;
 
               return (
-                <div key={item.title} className="rounded-2xl border border-foreground/10 bg-background/70 p-4">
+                <div
+                  key={item.title}
+                  className="rounded-2xl border border-foreground/10 bg-background/70 p-4"
+                >
                   <Icon className="size-5 text-brand" />
                   <h3 className="mt-3 text-sm font-semibold uppercase tracking-[0.08em] text-foreground">
                     {item.title}
                   </h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.detail}</p>
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {item.detail}
+                  </p>
                 </div>
               );
             })}
@@ -380,8 +442,14 @@ export default function Home() {
 
         <LeadFormsSection />
 
-        <section className="reveal-up relative overflow-hidden rounded-3xl border border-brand/30 bg-brand/12 p-6 md:p-10" style={fade("1040ms")}>
-          <div className="absolute -right-20 bottom-0 h-52 w-52 rounded-full bg-brand/25 blur-3xl" aria-hidden />
+        <section
+          className="reveal-up relative overflow-hidden rounded-3xl border border-brand/30 bg-brand/12 p-6 md:p-10"
+          style={fade("1040ms")}
+        >
+          <div
+            className="absolute -right-20 bottom-0 h-52 w-52 rounded-full bg-brand/25 blur-3xl"
+            aria-hidden
+          />
           <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div className="space-y-4">
               <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-brand">
@@ -394,8 +462,8 @@ export default function Home() {
                 Plusieurs solutions.
               </h2>
               <p className="max-w-xl text-sm leading-7 text-muted-foreground md:text-base">
-                Phone Life combine atelier technique et point relais Pick-Up. Vous gagnez
-                temps, deplacement et tranquillite.
+                Phone Life combine atelier technique et point relais Pick-Up.
+                Vous gagnez temps, deplacement et tranquillite.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -415,8 +483,8 @@ export default function Home() {
               </a>
               <div className="rounded-2xl border border-foreground/20 bg-background/85 px-5 py-3 text-sm leading-6 text-muted-foreground">
                 <p className="flex items-center gap-2 font-medium text-foreground">
-                  <MapPin className="size-4 text-brand" />
-                  6 rue Maurice Tenine, 94260 Fresnes
+                  <MapPin className="size-4 text-brand" />6 rue Maurice Tenine,
+                  94260 Fresnes
                 </p>
                 <p className="mt-1 flex items-center gap-2 font-medium text-foreground">
                   <MapPin className="size-4 text-brand" />
