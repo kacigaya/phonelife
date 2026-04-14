@@ -16,6 +16,11 @@ const initialState: LeadFormState = {
   message: "",
 };
 
+const workshopAddresses = {
+  fresnes: "6 rue Maurice Tenine, 94260 Fresnes",
+  savigny: "229 Av. de l'Europe, 77176 Savigny-le-Temple",
+} as const;
+
 type FormKind = "devis" | "rdv";
 
 function LeadFormCard({ kind }: { kind: FormKind }) {
@@ -100,6 +105,25 @@ function LeadFormCard({ kind }: { kind: FormKind }) {
           ) : null}
         </label>
 
+        {isQuote ? null : (
+          <label className="field-label">
+            Atelier
+            <select className="field-input" name="workshop" defaultValue="" required>
+              <option value="" disabled>
+                Choisissez atelier
+              </option>
+              <option value="fresnes">Fresnes</option>
+              <option value="savigny">Savigny-le-Temple</option>
+            </select>
+            {state.errors?.workshop ? <span className="field-error">{state.errors.workshop}</span> : null}
+            <span className="mt-1 text-xs normal-case tracking-normal text-muted-foreground">
+              Fresnes: {workshopAddresses.fresnes}
+              <br />
+              Savigny-le-Temple: {workshopAddresses.savigny}
+            </span>
+          </label>
+        )}
+
         <label className="field-label">
           Panne / besoin
           <textarea
@@ -156,9 +180,6 @@ export function LeadFormsSection() {
             ou RDV direct.
           </h2>
         </div>
-        <p className="max-w-md text-sm leading-7 text-muted-foreground md:text-base">
-          Formulaire traite par email Gmail SMTP. Reponse humaine rapide pendant heures d ouverture.
-        </p>
       </div>
 
       <div className="reveal-up grid gap-5 lg:grid-cols-2" style={{ "--reveal-delay": "1060ms" } as CSSProperties}>

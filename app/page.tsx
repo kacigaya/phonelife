@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import {
   BatteryCharging,
@@ -15,6 +16,96 @@ import {
   Wrench,
 } from "lucide-react";
 import { LeadFormsSection } from "@/components/lead-forms";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://phone-life-94.fr";
+
+export const metadata: Metadata = {
+  title: "Reparation telephone a Fresnes et Savigny-le-Temple",
+  description:
+    "Phone Life repare smartphones, iPhone, Samsung, tablettes, iPad et PC. Diagnostic rapide, devis clair, prise de RDV atelier.",
+  keywords: [
+    "reparation telephone fresnes",
+    "reparation telephone savigny le temple",
+    "reparation iphone fresnes",
+    "reparation samsung savigny",
+    "reparation tablette fresnes",
+    "reparation ordinateur fresnes",
+    "devis reparation telephone",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Phone Life - Reparation smartphone, tablette, PC",
+    description:
+      "Ateliers a Fresnes et Savigny-le-Temple. Reparation rapide, devis et RDV.",
+    url: "/",
+    type: "website",
+  },
+};
+
+const localBusinessStructuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "RepairShop",
+      name: "Phone Life",
+      url: siteUrl,
+      telephone: "+33658993408",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "6 rue Maurice Tenine",
+        postalCode: "94260",
+        addressLocality: "Fresnes",
+        addressCountry: "FR",
+      },
+      areaServed: ["Fresnes", "Cachan", "Chevilly-Larue", "Antony", "L'Hay-les-Roses"],
+      openingHoursSpecification: [
+        {
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+          ],
+          opens: "10:00",
+          closes: "19:00",
+        },
+      ],
+    },
+    {
+      "@type": "RepairShop",
+      name: "Phone Life",
+      url: siteUrl,
+      telephone: "+33605822126",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "229 Av. de l'Europe",
+        postalCode: "77176",
+        addressLocality: "Savigny-le-Temple",
+        addressCountry: "FR",
+      },
+      openingHoursSpecification: [
+        {
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+          ],
+          opens: "10:00",
+          closes: "19:00",
+        },
+      ],
+    },
+  ],
+};
 
 const services = [
   {
@@ -98,6 +189,10 @@ const fade = (delay: string): CSSProperties => ({
 export default function Home() {
   return (
     <div className="relative isolate min-h-screen overflow-x-clip pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessStructuredData) }}
+      />
       <div className="pointer-events-none absolute inset-0 atelier-grid" aria-hidden />
       <div className="pointer-events-none absolute inset-0 noise-mask" aria-hidden />
 
@@ -106,26 +201,28 @@ export default function Home() {
           <span className="font-display text-4xl leading-none tracking-[0.06em] text-foreground md:text-5xl">
             PHONE LIFE
           </span>
-          <span className="rounded-sm border border-brand/40 bg-brand/10 px-2 py-0.5 text-[0.7rem] font-semibold tracking-[0.14em] text-brand">
-            94
-          </span>
         </a>
-        <a
-          className="reveal-up inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-background/85 px-4 py-2 text-sm font-semibold backdrop-blur-sm transition-colors hover:border-brand/50 hover:text-brand"
-          href="tel:0658993408"
-          style={fade("120ms")}
-        >
-          <PhoneCall className="size-4" />
-          06 58 99 34 08
-        </a>
+        <div className="reveal-up flex items-center gap-2" style={fade("120ms")}>
+          <a
+            className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-background/85 px-4 py-2 text-sm font-semibold backdrop-blur-sm transition-colors hover:border-brand/50 hover:text-brand"
+            href="tel:0658993408"
+          >
+            <PhoneCall className="size-4" />
+            06 58 99 34 08
+          </a>
+          <a
+            className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-background/85 px-4 py-2 text-sm font-semibold backdrop-blur-sm transition-colors hover:border-brand/50 hover:text-brand"
+            href="tel:0605822126"
+          >
+            <PhoneCall className="size-4" />
+            06 05 82 21 26
+          </a>
+        </div>
       </header>
 
       <main className="page-shell mx-auto flex w-full max-w-6xl flex-col gap-10 px-5 pt-10 md:gap-16 md:px-8 md:pt-14">
         <section id="top" className="grid items-end gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-12">
           <div className="reveal-up flex flex-col gap-8" style={fade("180ms")}>
-            <p className="inline-flex w-fit items-center gap-2 rounded-full border border-foreground/20 bg-background/90 px-4 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Fresnes 94260 · Sans rendez-vous
-            </p>
             <h1 className="text-balance font-display text-6xl leading-[0.88] tracking-[0.02em] text-foreground sm:text-7xl md:text-8xl lg:text-[7rem]">
               Reparation
               <br />
@@ -310,14 +407,22 @@ export default function Home() {
                 06 58 99 34 08
               </a>
               <a
-                className="inline-flex items-center gap-2 rounded-full border border-foreground/20 bg-background/85 px-6 py-3 text-sm font-semibold transition-colors hover:border-brand/55 hover:text-brand"
-                href="https://phone-life-94.fr/phone-life-nous-trouver/"
-                target="_blank"
-                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background transition-transform hover:-translate-y-0.5"
+                href="tel:0605822126"
               >
-                <MapPin className="size-4" />
-                Nous trouver
+                <PhoneCall className="size-4" />
+                06 05 82 21 26
               </a>
+              <div className="rounded-2xl border border-foreground/20 bg-background/85 px-5 py-3 text-sm leading-6 text-muted-foreground">
+                <p className="flex items-center gap-2 font-medium text-foreground">
+                  <MapPin className="size-4 text-brand" />
+                  6 rue Maurice Tenine, 94260 Fresnes
+                </p>
+                <p className="mt-1 flex items-center gap-2 font-medium text-foreground">
+                  <MapPin className="size-4 text-brand" />
+                  229 Av. de l&apos;Europe, 77176 Savigny-le-Temple
+                </p>
+              </div>
             </div>
           </div>
         </section>

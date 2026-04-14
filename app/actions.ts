@@ -11,6 +11,7 @@ type FieldName =
   | "device"
   | "issue"
   | "availability"
+  | "workshop"
   | "consent";
 
 type FieldErrors = Partial<Record<FieldName, string>>;
@@ -47,7 +48,7 @@ function isValidPhone(value: string) {
   return /^[+\d][\d\s().-]{7,}$/.test(value);
 }
 
-function validateLeadForm(formData: FormData): FieldErrors {
+function validateLeadForm(formData: FormData, leadType: LeadType): FieldErrors {
   const errors: FieldErrors = {};
 
   const fullName = textField(formData, "fullName");
@@ -56,6 +57,7 @@ function validateLeadForm(formData: FormData): FieldErrors {
   const device = textField(formData, "device");
   const issue = textField(formData, "issue");
   const availability = textField(formData, "availability");
+  const workshop = textField(formData, "workshop");
   const consent = textField(formData, "consent");
   const trap = textField(formData, "company");
 
@@ -88,6 +90,10 @@ function validateLeadForm(formData: FormData): FieldErrors {
     errors.availability = "Indiquez disponibilite.";
   }
 
+  if (leadType === "rdv" && !["fresnes", "savigny"].includes(workshop)) {
+    errors.workshop = "Choisissez atelier.";
+  }
+
   if (consent !== "yes") {
     errors.consent = "Consentement requis.";
   }
@@ -104,8 +110,11 @@ function mailConfig() {
   const from = process.env.SMTP_FROM ?? user;
   const to = process.env.LEADS_TO_EMAIL ?? user;
   const shopPhone = process.env.SHOP_PHONE ?? "06 58 99 34 08";
-  const shopAddress =
-    process.env.SHOP_ADDRESS ?? "229 Av. de l'Europe, 77176 Savigny-le-Temple";
+  const shopPhoneAlt = process.env.SHOP_PHONE_ALT ?? "06 05 82 21 26";
+  const shopAddressFresnes =
+    process.env.SHOP_ADDRESS_FRESNES ?? "6 rue Maurice Tenine, 94260 Fresnes";
+  const shopAddressSavigny =
+    process.env.SHOP_ADDRESS_SAVIGNY ?? "229 Av. de l'Europe, 77176 Savigny-le-Temple";
   const shopHours =
     process.env.SHOP_HOURS ?? "Lundi-Samedi, 10h-19h";
 
@@ -122,9 +131,33 @@ function mailConfig() {
     from,
     to,
     shopPhone,
-    shopAddress,
+    shopPhoneAlt,
+    shopAddressFresnes,
+    shopAddressSavigny,
     shopHours,
   };
+}
+
+function workshopMeta(workshop: string, config: ReturnType<typeof mailConfig>) {
+  if (!config) {
+    return null;
+  }
+
+  if (workshop === "fresnes") {
+    return {
+      label: "Fresnes",
+      address: config.shopAddressFresnes,
+    };
+  }
+
+  if (workshop === "savigny") {
+    return {
+      label: "Savigny-le-Temple",
+      address: config.shopAddressSavigny,
+    };
+  }
+
+  return null;
 }
 
 function customerReplyTemplate(args: {
@@ -133,16 +166,18 @@ function customerReplyTemplate(args: {
   device: string;
   issue: string;
   availability: string;
+  workshopLabel: string | null;
+  workshopAddress: string | null;
   shopPhone: string;
-  shopAddress: string;
+  shopPhoneAlt: string;
   shopHours: string;
 }) {
   const kindLabel =
     args.leadType === "devis" ? "demande de devis" : "demande de rendez-vous";
   const subject =
     args.leadType === "devis"
-      ? "Phone Life 94 - Confirmation demande de devis"
-      : "Phone Life 94 - Confirmation prise de RDV";
+      ? "Phone Life - Confirmation demande de devis"
+      : "Phone Life - Confirmation prise de RDV";
 
   const text = [
     `Bonjour ${args.fullName},`,
@@ -153,14 +188,16 @@ function customerReplyTemplate(args: {
     "Recapitulatif:",
     `- Appareil: ${args.device}`,
     `- Disponibilite: ${args.availability}`,
+    ...(args.workshopLabel ? [`- Atelier: ${args.workshopLabel}`] : []),
+    ...(args.workshopAddress ? [`- Adresse atelier: ${args.workshopAddress}`] : []),
     `- Panne: ${args.issue}`,
     "",
     `Telephone atelier: ${args.shopPhone}`,
-    `Adresse: ${args.shopAddress}`,
+    `Telephone atelier 2: ${args.shopPhoneAlt}`,
     `Horaires: ${args.shopHours}`,
     "",
     "Merci,",
-    "Phone Life 94",
+    "Phone Life",
   ].join("\n");
 
   const html = `
@@ -174,14 +211,24 @@ function customerReplyTemplate(args: {
       <ul style="margin: 0 0 14px 20px; padding: 0;">
         <li><strong>Appareil:</strong> ${escapeHtml(args.device)}</li>
         <li><strong>Disponibilite:</strong> ${escapeHtml(args.availability)}</li>
+        ${
+          args.workshopLabel
+            ? `<li><strong>Atelier:</strong> ${escapeHtml(args.workshopLabel)}</li>`
+            : ""
+        }
+        ${
+          args.workshopAddress
+            ? `<li><strong>Adresse atelier:</strong> ${escapeHtml(args.workshopAddress)}</li>`
+            : ""
+        }
         <li><strong>Panne:</strong> ${escapeHtml(args.issue).replaceAll("\n", "<br />")}</li>
       </ul>
       <p style="margin: 0 0 10px;">
         <strong>Telephone atelier:</strong> ${escapeHtml(args.shopPhone)}<br />
-        <strong>Adresse:</strong> ${escapeHtml(args.shopAddress)}<br />
+        <strong>Telephone atelier 2:</strong> ${escapeHtml(args.shopPhoneAlt)}<br />
         <strong>Horaires:</strong> ${escapeHtml(args.shopHours)}
       </p>
-      <p style="margin: 14px 0 0;">Merci,<br />Phone Life 94</p>
+      <p style="margin: 14px 0 0;">Merci,<br />Phone Life</p>
     </div>
   `;
 
@@ -203,7 +250,7 @@ async function sendLeadEmail(formData: FormData, leadType: LeadType) {
     } as LeadFormState;
   }
 
-  const errors = validateLeadForm(formData);
+  const errors = validateLeadForm(formData, leadType);
   if (Object.keys(errors).length > 0) {
     return {
       status: "error",
@@ -218,6 +265,8 @@ async function sendLeadEmail(formData: FormData, leadType: LeadType) {
   const device = textField(formData, "device");
   const issue = textField(formData, "issue");
   const availability = textField(formData, "availability");
+  const workshop = textField(formData, "workshop");
+  const workshopData = workshopMeta(workshop, config);
 
   const kindLabel = leadType === "devis" ? "Demande de devis" : "Prise de RDV";
 
@@ -231,7 +280,7 @@ async function sendLeadEmail(formData: FormData, leadType: LeadType) {
     },
   });
 
-  const subject = `[Phone Life 94] ${kindLabel} - ${fullName}`;
+  const subject = `[Phone Life] ${kindLabel} - ${fullName}`;
 
   const text = [
     `Type: ${kindLabel}`,
@@ -240,6 +289,7 @@ async function sendLeadEmail(formData: FormData, leadType: LeadType) {
     `Email: ${email}`,
     `Appareil: ${device}`,
     `Disponibilite: ${availability}`,
+    ...(workshopData ? [`Atelier: ${workshopData.label}`, `Adresse atelier: ${workshopData.address}`] : []),
     `Probleme: ${issue}`,
   ].join("\n");
 
@@ -250,6 +300,11 @@ async function sendLeadEmail(formData: FormData, leadType: LeadType) {
     <p><strong>Email:</strong> ${escapeHtml(email)}</p>
     <p><strong>Appareil:</strong> ${escapeHtml(device)}</p>
     <p><strong>Disponibilite:</strong> ${escapeHtml(availability)}</p>
+    ${
+      workshopData
+        ? `<p><strong>Atelier:</strong> ${escapeHtml(workshopData.label)}</p><p><strong>Adresse atelier:</strong> ${escapeHtml(workshopData.address)}</p>`
+        : ""
+    }
     <p><strong>Probleme:</strong></p>
     <p>${escapeHtml(issue).replaceAll("\n", "<br />")}</p>
   `;
@@ -260,8 +315,10 @@ async function sendLeadEmail(formData: FormData, leadType: LeadType) {
     device,
     issue,
     availability,
+    workshopLabel: workshopData?.label ?? null,
+    workshopAddress: workshopData?.address ?? null,
     shopPhone: config.shopPhone,
-    shopAddress: config.shopAddress,
+    shopPhoneAlt: config.shopPhoneAlt,
     shopHours: config.shopHours,
   });
 
