@@ -48,6 +48,16 @@ function isValidPhone(value: string) {
   return /^[+\d][\d\s().-]{7,}$/.test(value);
 }
 
+function readEnv(name: string) {
+  const value = process.env[name];
+  if (!value) {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : undefined;
+}
+
 function validateLeadForm(formData: FormData, leadType: LeadType): FieldErrors {
   const errors: FieldErrors = {};
 
@@ -102,23 +112,30 @@ function validateLeadForm(formData: FormData, leadType: LeadType): FieldErrors {
 }
 
 function mailConfig() {
-  const host = process.env.SMTP_HOST ?? "smtp.gmail.com";
-  const port = Number(process.env.SMTP_PORT ?? "465");
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const secure = (process.env.SMTP_SECURE ?? "true") === "true";
-  const from = process.env.SMTP_FROM ?? user;
-  const to = process.env.LEADS_TO_EMAIL ?? user;
-  const shopPhone = process.env.SHOP_PHONE ?? "06 58 99 34 08";
-  const shopPhoneAlt = process.env.SHOP_PHONE_ALT ?? "06 05 82 21 26";
+  const host = readEnv("SMTP_HOST") ?? "smtp.gmail.com";
+  const port = Number(readEnv("SMTP_PORT") ?? "465");
+  const user = readEnv("SMTP_USER");
+  const pass = readEnv("SMTP_PASS");
+  const secure = (readEnv("SMTP_SECURE") ?? "true") === "true";
+  const from = readEnv("SMTP_FROM") ?? user;
+  const to = readEnv("LEADS_TO_EMAIL") ?? user;
+  const shopPhone = readEnv("SHOP_PHONE") ?? "06 58 99 34 08";
+  const shopPhoneAlt = readEnv("SHOP_PHONE_ALT") ?? "06 05 82 21 26";
   const shopAddressFresnes =
-    process.env.SHOP_ADDRESS_FRESNES ?? "6 rue Maurice Tenine, 94260 Fresnes";
+    readEnv("SHOP_ADDRESS_FRESNES") ?? "6 rue Maurice Tenine, 94260 Fresnes";
   const shopAddressSavigny =
-    process.env.SHOP_ADDRESS_SAVIGNY ?? "229 Av. de l'Europe, 77176 Savigny-le-Temple";
+    readEnv("SHOP_ADDRESS_SAVIGNY") ?? "229 Av. de l'Europe, 77176 Savigny-le-Temple";
   const shopHours =
-    process.env.SHOP_HOURS ?? "Lundi-Samedi, 10h-19h";
+    readEnv("SHOP_HOURS") ?? "Lundi-Samedi, 10h-19h";
 
   if (!user || !pass || !from || !to) {
+    const missing = [
+      !user ? "SMTP_USER" : null,
+      !pass ? "SMTP_PASS" : null,
+      !from ? "SMTP_FROM" : null,
+      !to ? "LEADS_TO_EMAIL" : null,
+    ].filter(Boolean);
+    console.error("SMTP config missing", { missing });
     return null;
   }
 
@@ -246,7 +263,7 @@ async function sendLeadEmail(formData: FormData, leadType: LeadType) {
     return {
       status: "error",
       message:
-        "Service email indisponible. Configurez SMTP_USER, SMTP_PASS, SMTP_FROM et LEADS_TO_EMAIL.",
+        "Service email indisponible. Configurez SMTP_USER et SMTP_PASS (SMTP_FROM / LEADS_TO_EMAIL optionnels).",
     } as LeadFormState;
   }
 
