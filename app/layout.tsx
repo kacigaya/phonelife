@@ -1,29 +1,46 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { Big_Shoulders, Geist, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://phone-life-94.fr";
+const FALLBACK_SITE_URL = "https://phonelife.vercel.app";
 
-const ibmPlexSans = IBM_Plex_Sans({
+function resolveMetadataBase() {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+
+  if (!raw) {
+    return new URL(FALLBACK_SITE_URL);
+  }
+
+  const normalized = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+
+  try {
+    return new URL(normalized);
+  } catch {
+    return new URL(FALLBACK_SITE_URL);
+  }
+}
+
+const metadataBase = resolveMetadataBase();
+
+const geistSans = Geist({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
 });
 
-const bebasNeue = Bebas_Neue({
+const bigShoulders = Big_Shoulders({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "600", "800", "900"],
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-geist-mono",
+const jetBrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  metadataBase,
   title: {
     default: "Phone Life | Reparation smartphone, tablette, PC",
     template: "%s | Phone Life",
@@ -82,7 +99,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${ibmPlexSans.variable} ${bebasNeue.variable} ${ibmPlexMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${bigShoulders.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
