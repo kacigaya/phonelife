@@ -1,0 +1,21 @@
+<svg
+    width="32"
+    height="32"
+    viewBox="0 0 32 32"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+>
+<rect width="32" height="32" rx="10" fill="#1a1a1a" />
+<g opacity="0.1" transform="translate(13, 10) scale(0.6)">
+<rect width="10" height="20" rx="1.5" fill="white" />
+<rect x="3.5" y="1" width="3" height="0.5" rx="0.25" fill="#1a1a1a" />
+<circle cx="5" cy="18" r="1" fill="#1a1a1a" />
+</g>
+<g transform="translate(7.5, 0) skewX(-15)">
+<path
+            d="M4.5 22V10H10C11.933 10 13.5 11.567 13.5 13.5C13.5 15.433 11.933 17 10 17H6.5V22H4.5Z"
+            fill="white"
+        />
+<path d="M15 10V22H21V20H17V10H15Z" fill="#ff791d" />
+</g>
+</svg>

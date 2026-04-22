@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Big_Shoulders, Geist, JetBrains_Mono } from "next/font/google";
+import { Geist, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 const FALLBACK_SITE_URL = "https://phonelife.vercel.app";
@@ -27,10 +28,12 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const bigShoulders = Big_Shoulders({
+const bigShoulders = localFont({
+  src: "./fonts/big-shoulders-latin-wght-normal.woff2",
   variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["400", "600", "800", "900"],
+  display: "swap",
+  weight: "100 900",
+  style: "normal",
 });
 
 const jetBrainsMono = JetBrains_Mono({
@@ -88,8 +91,15 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
   category: "technology",
 };
+
+import { ThemeProvider } from "@/components/theme-provider";
+import { localBusinessStructuredData } from "@/lib/structured-data";
 
 export default function RootLayout({
   children,
@@ -100,9 +110,25 @@ export default function RootLayout({
     <html
       lang="fr"
       className={`${geistSans.variable} ${bigShoulders.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(localBusinessStructuredData),
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

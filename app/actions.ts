@@ -11,8 +11,7 @@ type FieldName =
   | "device"
   | "issue"
   | "availability"
-  | "workshop"
-  | "consent";
+  | "workshop";
 
 type FieldErrors = Partial<Record<FieldName, string>>;
 
@@ -68,7 +67,6 @@ function validateLeadForm(formData: FormData, leadType: LeadType): FieldErrors {
   const issue = textField(formData, "issue");
   const availability = textField(formData, "availability");
   const workshop = textField(formData, "workshop");
-  const consent = textField(formData, "consent");
   const trap = textField(formData, "company");
 
   if (trap) {
@@ -102,10 +100,6 @@ function validateLeadForm(formData: FormData, leadType: LeadType): FieldErrors {
 
   if (leadType === "rdv" && !["fresnes", "savigny"].includes(workshop)) {
     errors.workshop = "Choisissez atelier.";
-  }
-
-  if (consent !== "yes") {
-    errors.consent = "Consentement requis.";
   }
 
   return errors;
@@ -196,85 +190,66 @@ function customerReplyTemplate(args: {
       ? "Phone Life - Confirmation demande de devis"
       : "Phone Life - Confirmation prise de RDV";
 
-  const text = [
-    `Bonjour ${args.fullName},`,
-    "",
-    `Nous avons bien recu votre ${kindLabel}.`,
-    "Notre equipe vous recontacte rapidement pendant les heures d'ouverture.",
-    "",
-    "Recapitulatif:",
-    `- Appareil: ${args.device}`,
-    `- Disponibilite: ${args.availability}`,
-    ...(args.workshopLabel ? [`- Atelier: ${args.workshopLabel}`] : []),
-    ...(args.workshopAddress ? [`- Adresse atelier: ${args.workshopAddress}`] : []),
-    `- Panne: ${args.issue}`,
-    "",
-    `Telephone atelier: ${args.shopPhone}`,
-    `Telephone atelier 2: ${args.shopPhoneAlt}`,
-    `Horaires: ${args.shopHours}`,
-    "",
-    "Merci,",
-    "Phone Life",
-  ].join("\n");
+  const brandColor = "#ff791d";
+  const bgColor = "#0a0a0a";
+  const cardColor = "#141414";
+  const textColor = "#ffffff";
+  const mutedColor = "#a1a1aa";
 
   const html = `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #1a1a1a;">
-      <h2 style="margin: 0 0 12px;">Bonjour ${escapeHtml(args.fullName)},</h2>
-      <p style="margin: 0 0 12px;">
-        Nous avons bien recu votre ${escapeHtml(kindLabel)}.
-        Notre equipe vous recontacte rapidement pendant les heures d ouverture.
-      </p>
-      <p style="margin: 0 0 8px;"><strong>Recapitulatif</strong></p>
-      <ul style="margin: 0 0 14px 20px; padding: 0;">
-        <li><strong>Appareil:</strong> ${escapeHtml(args.device)}</li>
-        <li><strong>Disponibilite:</strong> ${escapeHtml(args.availability)}</li>
-        ${
-          args.workshopLabel
-            ? `<li><strong>Atelier:</strong> ${escapeHtml(args.workshopLabel)}</li>`
-            : ""
-        }
-        ${
-          args.workshopAddress
-            ? `<li><strong>Adresse atelier:</strong> ${escapeHtml(args.workshopAddress)}</li>`
-            : ""
-        }
-        <li><strong>Panne:</strong> ${escapeHtml(args.issue).replaceAll("\n", "<br />")}</li>
-      </ul>
-      <p style="margin: 0 0 10px;">
-        <strong>Telephone atelier:</strong> ${escapeHtml(args.shopPhone)}<br />
-        <strong>Telephone atelier 2:</strong> ${escapeHtml(args.shopPhoneAlt)}<br />
-        <strong>Horaires:</strong> ${escapeHtml(args.shopHours)}
-      </p>
-      <p style="margin: 14px 0 0;">Merci,<br />Phone Life</p>
+    <div style="background-color: ${bgColor}; padding: 40px 20px; font-family: system-ui, -apple-system, sans-serif;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: ${cardColor}; border: 1px solid #27272a; border-radius: 24px; overflow: hidden; color: ${textColor};">
+        <div style="padding: 40px; border-bottom: 1px solid #27272a;">
+          <h1 style="margin: 0; font-size: 24px; color: ${brandColor}; text-transform: uppercase; letter-spacing: 0.05em;">Phone Life</h1>
+          <p style="margin: 8px 0 0; color: ${mutedColor}; font-size: 14px;">Confirmation de réception</p>
+        </div>
+        
+        <div style="padding: 40px;">
+          <h2 style="margin: 0 0 16px; font-size: 20px;">Bonjour ${escapeHtml(args.fullName)},</h2>
+          <p style="margin: 0 0 24px; color: ${mutedColor}; line-height: 1.6;">
+            Nous avons bien reçu votre <strong>${kindLabel}</strong>. 
+            Notre équipe technique vous recontactera rapidement par téléphone.
+          </p>
+
+          <div style="background-color: #1a1a1a; border-radius: 16px; padding: 24px; margin-bottom: 32px; border: 1px solid #27272a;">
+            <p style="margin: 0 0 16px; font-size: 12px; font-weight: bold; color: ${brandColor}; text-transform: uppercase; letter-spacing: 0.1em;">Détails de la demande</p>
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr><td style="padding: 8px 0; color: ${mutedColor}; font-size: 14px;">Appareil</td><td style="padding: 8px 0; text-align: right;">${escapeHtml(args.device)}</td></tr>
+              <tr><td style="padding: 8px 0; color: ${mutedColor}; font-size: 14px;">Disponibilité</td><td style="padding: 8px 0; text-align: right;">${escapeHtml(args.availability)}</td></tr>
+              ${args.workshopLabel ? `<tr><td style="padding: 8px 0; color: ${mutedColor}; font-size: 14px;">Atelier</td><td style="padding: 8px 0; text-align: right;">${escapeHtml(args.workshopLabel)}</td></tr>` : ""}
+            </table>
+            <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #27272a;">
+              <p style="margin: 0 0 8px; color: ${mutedColor}; font-size: 14px;">Problème décrit :</p>
+              <p style="margin: 0; line-height: 1.5;">${escapeHtml(args.issue).replaceAll("\n", "<br />")}</p>
+            </div>
+          </div>
+
+          <div style="padding-top: 32px; border-top: 1px solid #27272a;">
+            <p style="margin: 0 0 12px; font-size: 14px;"><strong>L'Atelier</strong></p>
+            <p style="margin: 0; font-size: 14px; color: ${mutedColor};">
+              ${args.workshopAddress ? `${escapeHtml(args.workshopAddress)}<br />` : ""}
+              ${escapeHtml(args.shopPhone)} • ${escapeHtml(args.shopPhoneAlt)}<br />
+              ${escapeHtml(args.shopHours)}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
   return {
     subject,
-    text,
+    text: `Bonjour ${args.fullName}, nous avons bien recu votre ${kindLabel}. Appareil: ${args.device}.`,
     html,
   };
 }
 
 async function sendLeadEmail(formData: FormData, leadType: LeadType) {
   const config = mailConfig();
-
-  if (!config) {
-    return {
-      status: "error",
-      message:
-        "Service email indisponible. Configurez SMTP_USER et SMTP_PASS (SMTP_FROM / LEADS_TO_EMAIL optionnels).",
-    } as LeadFormState;
-  }
+  if (!config) return { status: "error", message: "SMTP Config Missing" };
 
   const errors = validateLeadForm(formData, leadType);
-  if (Object.keys(errors).length > 0) {
-    return {
-      status: "error",
-      message: "Champs incomplets ou invalides.",
-      errors,
-    } as LeadFormState;
-  }
+  if (Object.keys(errors).length > 0) return { status: "error", message: "Invalide", errors };
 
   const fullName = textField(formData, "fullName");
   const phone = textField(formData, "phone");
@@ -286,52 +261,39 @@ async function sendLeadEmail(formData: FormData, leadType: LeadType) {
   const workshopData = workshopMeta(workshop, config);
 
   const kindLabel = leadType === "devis" ? "Demande de devis" : "Prise de RDV";
+  const brandColor = "#ff791d";
+
+  const html = `
+    <div style="background-color: #f4f4f5; padding: 40px 20px; font-family: system-ui, sans-serif;">
+      <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; padding: 40px; border: 1px solid #e4e4e7;">
+        <h1 style="margin: 0 0 24px; font-size: 20px; color: #18181b;">${kindLabel} : ${escapeHtml(fullName)}</h1>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+          <tr style="border-bottom: 1px solid #f4f4f5;"><td style="padding: 12px 0; color: #71717a;">Client</td><td style="padding: 12px 0; text-align: right; font-weight: bold;">${escapeHtml(fullName)}</td></tr>
+          <tr style="border-bottom: 1px solid #f4f4f5;"><td style="padding: 12px 0; color: #71717a;">Téléphone</td><td style="padding: 12px 0; text-align: right; font-weight: bold; color: ${brandColor};">${escapeHtml(phone)}</td></tr>
+          <tr style="border-bottom: 1px solid #f4f4f5;"><td style="padding: 12px 0; color: #71717a;">Email</td><td style="padding: 12px 0; text-align: right;">${escapeHtml(email)}</td></tr>
+          <tr style="border-bottom: 1px solid #f4f4f5;"><td style="padding: 12px 0; color: #71717a;">Appareil</td><td style="padding: 12px 0; text-align: right;">${escapeHtml(device)}</td></tr>
+          <tr style="border-bottom: 1px solid #f4f4f5;"><td style="padding: 12px 0; color: #71717a;">Dispo</td><td style="padding: 12px 0; text-align: right;">${escapeHtml(availability)}</td></tr>
+          ${workshopData ? `<tr style="border-bottom: 1px solid #f4f4f5;"><td style="padding: 12px 0; color: #71717a;">Atelier</td><td style="padding: 12px 0; text-align: right;">${escapeHtml(workshopData.label)}</td></tr>` : ""}
+        </table>
+
+        <div style="background-color: #fafafa; padding: 20px; border-radius: 8px;">
+          <p style="margin: 0 0 8px; font-size: 12px; color: #71717a; text-transform: uppercase;">Message :</p>
+          <p style="margin: 0; line-height: 1.5;">${escapeHtml(issue).replaceAll("\n", "<br />")}</p>
+        </div>
+      </div>
+    </div>
+  `;
 
   const transporter = nodemailer.createTransport({
     host: config.host,
     port: config.port,
     secure: config.secure,
-    auth: {
-      user: config.user,
-      pass: config.pass,
-    },
+    auth: { user: config.user, pass: config.pass },
   });
 
-  const subject = `[Phone Life] ${kindLabel} - ${fullName}`;
-
-  const text = [
-    `Type: ${kindLabel}`,
-    `Nom: ${fullName}`,
-    `Telephone: ${phone}`,
-    `Email: ${email}`,
-    `Appareil: ${device}`,
-    `Disponibilite: ${availability}`,
-    ...(workshopData ? [`Atelier: ${workshopData.label}`, `Adresse atelier: ${workshopData.address}`] : []),
-    `Probleme: ${issue}`,
-  ].join("\n");
-
-  const html = `
-    <h2>${escapeHtml(kindLabel)}</h2>
-    <p><strong>Nom:</strong> ${escapeHtml(fullName)}</p>
-    <p><strong>Telephone:</strong> ${escapeHtml(phone)}</p>
-    <p><strong>Email:</strong> ${escapeHtml(email)}</p>
-    <p><strong>Appareil:</strong> ${escapeHtml(device)}</p>
-    <p><strong>Disponibilite:</strong> ${escapeHtml(availability)}</p>
-    ${
-      workshopData
-        ? `<p><strong>Atelier:</strong> ${escapeHtml(workshopData.label)}</p><p><strong>Adresse atelier:</strong> ${escapeHtml(workshopData.address)}</p>`
-        : ""
-    }
-    <p><strong>Probleme:</strong></p>
-    <p>${escapeHtml(issue).replaceAll("\n", "<br />")}</p>
-  `;
-
   const customerReply = customerReplyTemplate({
-    leadType,
-    fullName,
-    device,
-    issue,
-    availability,
+    leadType, fullName, device, issue, availability,
     workshopLabel: workshopData?.label ?? null,
     workshopAddress: workshopData?.address ?? null,
     shopPhone: config.shopPhone,
@@ -343,8 +305,8 @@ async function sendLeadEmail(formData: FormData, leadType: LeadType) {
     await transporter.sendMail({
       from: config.from,
       to: config.to,
-      subject,
-      text,
+      subject: `[Phone Life] ${kindLabel} - ${fullName}`,
+      text: `Nouveau lead: ${fullName} - ${phone}`,
       html,
       replyTo: email,
     });
@@ -358,19 +320,12 @@ async function sendLeadEmail(formData: FormData, leadType: LeadType) {
         html: customerReply.html,
         replyTo: config.to,
       });
-    } catch {
-      
-    }
+    } catch (e) { console.error("Reply failed", e); }
 
-    return {
-      status: "success",
-      message: "Message envoye. Reponse rapide de notre equipe.",
-    } as LeadFormState;
-  } catch {
-    return {
-      status: "error",
-      message: "Echec envoi email. Verifiez configuration SMTP Gmail.",
-    } as LeadFormState;
+    return { status: "success", message: "Message envoye." } as LeadFormState;
+  } catch (e) {
+    console.error("Send failed", e);
+    return { status: "error", message: "Erreur envoi." } as LeadFormState;
   }
 }
 

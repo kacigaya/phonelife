@@ -25,26 +25,23 @@ type FormKind = "devis" | "rdv";
 
 function LeadFormCard({ kind }: { kind: FormKind }) {
   const isQuote = kind === "devis";
+  const Icon = isQuote ? FileText : CalendarCheck2;
   const action = isQuote ? sendQuoteRequest : sendAppointmentRequest;
   const [state, formAction, pending] = useActionState(action, initialState);
 
   return (
-    <article className="signal-card rounded-3xl border border-foreground/12 bg-card/86 p-5 md:p-6">
-      <div className="mb-5 flex items-center gap-3">
-        <span className="inline-flex rounded-xl border border-brand/35 bg-brand/12 p-2 text-brand">
-          {isQuote ? <FileText className="size-5" /> : <CalendarCheck2 className="size-5" />}
+    <article className="group relative border-border p-8 md:p-16 lg:border-r last:lg:border-r-0">
+      <div className="relative z-10 mb-8 flex flex-col gap-8">
+        <span className="flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-widest text-brand/70">
+          <Icon className="size-4" />
+          {isQuote ? "Devis gratuit" : "Rendez-vous"}
         </span>
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand">
-            {isQuote ? "Demande de devis" : "Prise de RDV"}
-          </p>
-          <h3 className="text-lg font-semibold text-foreground">
-            {isQuote ? "Estimation reparation" : "Reservation atelier"}
-          </h3>
-        </div>
+        <h3 className="font-display text-4xl leading-[0.9] tracking-tight text-foreground md:text-6xl">
+          {isQuote ? "Estimation express" : "Reserver un creneau"}
+        </h3>
       </div>
 
-      <form action={formAction} className="space-y-4" noValidate>
+      <form action={formAction} className="relative z-10 max-w-2xl space-y-8" noValidate>
         <input
           className="hidden"
           tabIndex={-1}
@@ -53,34 +50,43 @@ function LeadFormCard({ kind }: { kind: FormKind }) {
           type="text"
         />
 
-        <label className="field-label">
-          Nom complet
-          <input className="field-input" name="fullName" type="text" autoComplete="name" required />
-          {state.errors?.fullName ? <span className="field-error">{state.errors.fullName}</span> : null}
-        </label>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="field-label">
-            Telephone
-            <input className="field-input" name="phone" type="tel" autoComplete="tel" required />
-            {state.errors?.phone ? <span className="field-error">{state.errors.phone}</span> : null}
+        <div className="space-y-3">
+          <label className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+            Nom complet
           </label>
-          <label className="field-label">
-            Email
+          <input className="field-input" name="fullName" type="text" autoComplete="name" placeholder="Jean Dupont" required />
+          {state.errors?.fullName ? <span className="field-error">{state.errors.fullName}</span> : null}
+        </div>
+
+        <div className="grid gap-8 sm:grid-cols-2">
+          <div className="space-y-3">
+            <label className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+              Telephone
+            </label>
+            <input className="field-input" name="phone" type="tel" autoComplete="tel" placeholder="06 12 34 56 78" required />
+            {state.errors?.phone ? <span className="field-error">{state.errors.phone}</span> : null}
+          </div>
+          <div className="space-y-3">
+            <label className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+              Email
+            </label>
             <input
               className="field-input"
               name="email"
               type="email"
               autoComplete="email"
+              placeholder="jean@exemple.fr"
               suppressHydrationWarning
               required
             />
             {state.errors?.email ? <span className="field-error">{state.errors.email}</span> : null}
-          </label>
+          </div>
         </div>
 
-        <label className="field-label">
-          Appareil
+        <div className="space-y-3">
+          <label className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+            Appareil
+          </label>
           <input
             className="field-input"
             name="device"
@@ -89,75 +95,70 @@ function LeadFormCard({ kind }: { kind: FormKind }) {
             required
           />
           {state.errors?.device ? <span className="field-error">{state.errors.device}</span> : null}
-        </label>
+        </div>
 
-        <label className="field-label">
-          Disponibilite
+        <div className="space-y-3">
+          <label className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+            Disponibilite souhaitee
+          </label>
           <input
             className="field-input"
             name="availability"
             type="text"
-            placeholder="Ex: Mardi 14h ou samedi matin"
+            placeholder="Ex: Mardi apres-midi"
             required
           />
           {state.errors?.availability ? (
             <span className="field-error">{state.errors.availability}</span>
           ) : null}
-        </label>
+        </div>
 
         {isQuote ? null : (
-          <label className="field-label">
-            Atelier
+          <div className="space-y-3">
+            <label className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+              Choix de l atelier
+            </label>
             <select className="field-input" name="workshop" defaultValue="" required>
               <option value="" disabled>
-                Choisissez atelier
+                Selectionnez un lieu
               </option>
-              <option value="fresnes">Fresnes</option>
-              <option value="savigny">Savigny-le-Temple</option>
+              <option value="fresnes">Fresnes (94)</option>
+              <option value="savigny">Savigny-le-Temple (77)</option>
             </select>
             {state.errors?.workshop ? <span className="field-error">{state.errors.workshop}</span> : null}
-            <span className="mt-1 text-xs normal-case tracking-normal text-muted-foreground">
-              Fresnes: {workshopAddresses.fresnes}
-              <br />
-              Savigny-le-Temple: {workshopAddresses.savigny}
-            </span>
-          </label>
+          </div>
         )}
 
-        <label className="field-label">
-          Panne / besoin
+        <div className="space-y-3">
+          <label className="text-[0.65rem] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+            Description de la panne
+          </label>
           <textarea
-            className="field-input min-h-24 resize-y"
+            className="field-input min-h-32 resize-none"
             name="issue"
-            placeholder="Expliquez probleme (ecran casse, batterie, charge, etc.)"
+            placeholder="Decrivez le probleme..."
             required
           />
           {state.errors?.issue ? <span className="field-error">{state.errors.issue}</span> : null}
-        </label>
-
-        <label className="mt-1 flex items-start gap-3 text-sm text-muted-foreground">
-          <input className="mt-1 size-4 accent-[var(--color-brand)]" name="consent" type="checkbox" value="yes" required />
-          <span>J accepte d etre contacte par Phone Life pour ma demande.</span>
-        </label>
-        {state.errors?.consent ? <p className="field-error">{state.errors.consent}</p> : null}
+        </div>
 
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background transition disabled:cursor-not-allowed disabled:opacity-70"
+          className="pill-btn-solid w-full justify-center disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {pending ? <LoaderCircle className="size-4 animate-spin" /> : null}
+          {pending ? <LoaderCircle className="size-5 animate-spin" /> : null}
           {pending
-            ? "Envoi..."
+            ? "Traitement..."
             : isQuote
-              ? "Envoyer demande de devis"
-              : "Envoyer demande de RDV"}
+              ? "Envoyer la demande"
+              : "Confirmer le RDV"}
         </button>
 
         <p
           aria-live="polite"
           className={cn(
-            "text-sm leading-6",
+            "text-center text-sm font-medium",
             state.status === "success" ? "text-brand" : "text-muted-foreground"
           )}
         >
@@ -170,11 +171,11 @@ function LeadFormCard({ kind }: { kind: FormKind }) {
 
 export function LeadFormsSection() {
   return (
-    <section id="contact" className="space-y-6">
-      <div className="reveal-up flex flex-wrap items-end justify-between gap-4" style={{ "--reveal-delay": "980ms" } as CSSProperties}>
-        <div className="space-y-2">
+    <section id="contact">
+      <div className="mx-auto w-full max-w-7xl border-b border-border px-5 py-20 md:px-8 md:py-28">
+        <div className="reveal-up space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">Contact atelier</p>
-          <h2 className="font-display text-5xl leading-[0.9] text-foreground md:text-6xl">
+          <h2 className="font-display text-5xl leading-[0.9] text-foreground md:text-7xl">
             Devis rapide
             <br />
             ou RDV direct.
@@ -182,9 +183,11 @@ export function LeadFormsSection() {
         </div>
       </div>
 
-      <div className="reveal-up grid gap-5 lg:grid-cols-2" style={{ "--reveal-delay": "1060ms" } as CSSProperties}>
-        <LeadFormCard kind="devis" />
-        <LeadFormCard kind="rdv" />
+      <div className="reveal-up mx-auto w-full max-w-7xl">
+        <div className="grid lg:grid-cols-2">
+          <LeadFormCard kind="devis" />
+          <LeadFormCard kind="rdv" />
+        </div>
       </div>
     </section>
   );
