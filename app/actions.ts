@@ -21,11 +21,6 @@ export type LeadFormState = {
   errors?: FieldErrors;
 };
 
-const initialState: LeadFormState = {
-  status: "idle",
-  message: "",
-};
-
 function textField(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
@@ -244,12 +239,19 @@ function customerReplyTemplate(args: {
   };
 }
 
-async function sendLeadEmail(formData: FormData, leadType: LeadType) {
+async function sendLeadEmail(
+  formData: FormData,
+  leadType: LeadType
+): Promise<LeadFormState> {
   const config = mailConfig();
-  if (!config) return { status: "error", message: "SMTP Config Missing" };
+  if (!config) {
+    return { status: "error", message: "SMTP Config Missing" };
+  }
 
   const errors = validateLeadForm(formData, leadType);
-  if (Object.keys(errors).length > 0) return { status: "error", message: "Invalide", errors };
+  if (Object.keys(errors).length > 0) {
+    return { status: "error", message: "Invalide", errors };
+  }
 
   const fullName = textField(formData, "fullName");
   const phone = textField(formData, "phone");
@@ -322,25 +324,25 @@ async function sendLeadEmail(formData: FormData, leadType: LeadType) {
       });
     } catch (e) { console.error("Reply failed", e); }
 
-    return { status: "success", message: "Message envoye." } as LeadFormState;
+    return { status: "success", message: "Message envoye." };
   } catch (e) {
     console.error("Send failed", e);
-    return { status: "error", message: "Erreur envoi." } as LeadFormState;
+    return { status: "error", message: "Erreur envoi." };
   }
 }
 
 export async function sendQuoteRequest(
-  prevState: LeadFormState = initialState,
+  prevState: LeadFormState,
   formData: FormData
-) {
+): Promise<LeadFormState> {
   void prevState;
   return sendLeadEmail(formData, "devis");
 }
 
 export async function sendAppointmentRequest(
-  prevState: LeadFormState = initialState,
+  prevState: LeadFormState,
   formData: FormData
-) {
+): Promise<LeadFormState> {
   void prevState;
   return sendLeadEmail(formData, "rdv");
 }

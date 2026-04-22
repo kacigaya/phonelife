@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState } from "react";
-import type { CSSProperties } from "react";
 import { CalendarCheck2, FileText, LoaderCircle } from "lucide-react";
 
 import {
@@ -15,11 +14,6 @@ const initialState: LeadFormState = {
   status: "idle",
   message: "",
 };
-
-const workshopAddresses = {
-  fresnes: "6 rue Maurice Tenine, 94260 Fresnes",
-  savigny: "229 Av. de l'Europe, 77176 Savigny-le-Temple",
-} as const;
 
 type FormKind = "devis" | "rdv";
 
